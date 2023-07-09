@@ -53,8 +53,45 @@
   <input id="textInput" type="text">
   <br>
   <button id="editButton">Editar PDF</button>
-  <script>
-    // O restante do seu código JavaScript permanece o mesmo
-  </script>
+      <script>
+      document.getElementById('editButton').addEventListener('click', editPDF);
+  
+      async function editPDF() {
+        const pdfFile = document.getElementById('pdfFile').files[0];
+        const textInput = document.getElementById('textInput').value;
+  
+        const pdfDoc = await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+  
+        const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        const textSize = 12;
+        const textWidth = helveticaFont.widthOfTextAtSize(textInput, textSize);
+  
+        const pages = pdfDoc.getPages();
+  
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+  
+          page.drawText(textInput, {
+            x: 50,
+            y: 50,
+            size: textSize,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0),
+            opacity: 0.5,
+           
+          });
+        }
+  
+        const modifiedPdfBytes = await pdfDoc.save();
+  
+        const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+  
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = pdfFile.name;
+        a.click();
+      }
+    </script>
 </body>
 </html>
